@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { generateScript } from '../services/scriptGenerator';
 import AIQuoteSuggestions from './AIQuoteSuggestions';
+import { useAutoMode } from '../hooks/useAutoMode';
 
 const Container = styled.div`
   max-width: 800px;
@@ -167,16 +168,64 @@ const ScriptGenerator = () => {
   const [generatedScript, setGeneratedScript] = useState(null);
   const [useAI, setUseAI] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const { settings, autoConfirm, autoSelect, autoGenerateContent, getDelay } = useAutoMode();
+
+  // 自動填充內容
+  useEffect(() => {
+    if (settings.autoGenerate && !quote) {
+      const autoQuote = autoGenerateContent('quote');
+      if (autoQuote) {
+        setTimeout(() => setQuote(autoQuote), getDelay(500));
+      }
+    }
+  }, [settings.autoGenerate]);
+
+  // 自動設定 AI
+  useEffect(() => {
+    if (settings.autoEnableAI) {
+      setUseAI(true);
+    }
+  }, [settings.autoEnableAI]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // 自動確認生成
+    const shouldGenerate = await autoConfirm('確定要生成腳本嗎？', true);
+    if (!shouldGenerate && !settings.skipConfirmations) return;
+    
     setIsGenerating(true);
     try {
+      // 快速模式下減少生成延遲
+      const startTime = Date.now();
       const script = await generateScript({ quote, theme, tone, useAI });
+      
+      if (settings.quickMode) {
+        const elapsed = Date.now() - startTime;
+        const minDelay = 300; // 最少顯示時間
+        if (elapsed < minDelay) {
+          await new Promise(resolve => setTimeout(resolve, minDelay - elapsed));
+        }
+      }
+      
       setGeneratedScript(script);
+      
+      // 自動接受建議
+      if (settings.autoAcceptSuggestions && script.suggestions?.alternativeQuotes?.length > 0) {
+        const autoAccept = await autoConfirm('是否採用 AI 建議的替代金句？', false);
+        if (autoAccept) {
+          const bestSuggestion = autoSelect(script.suggestions.alternativeQuotes, 'first');
+          if (bestSuggestion) {
+            console.log('🤖 自動採用建議:', bestSuggestion);
+          }
+        }
+      }
+      
     } catch (error) {
       console.error('腳本生成失敗:', error);
-      alert('腳本生成失敗，請重試');
+      if (!settings.skipConfirmations) {
+        alert('腳本生成失敗，請重試');
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -205,11 +254,17 @@ const ScriptGenerator = () => {
           </div>
 
           <div>
-            <label htmlFor="theme">選擇主題：</label>
+            <label htmlFor="theme">
+              選擇主題：
+              {settings.autoSelectTheme && <span style={{color: '#10b981', fontSize: '0.8rem'}}> (自動)</span>}
+            </label>
             <Select
               id="theme"
               value={theme}
               onChange={(e) => setTheme(e.target.value)}
+              style={{
+                borderColor: settings.autoSelectTheme ? '#10b981' : '#ddd'
+              }}
             >
               <option value="success">成功</option>
               <option value="growth">個人成長</option>
@@ -218,11 +273,17 @@ const ScriptGenerator = () => {
           </div>
 
           <div>
-            <label htmlFor="tone">選擇語氣：</label>
+            <label htmlFor="tone">
+              選擇語氣：
+              {settings.autoSelectTheme && <span style={{color: '#10b981', fontSize: '0.8rem'}}> (自動)</span>}
+            </label>
             <Select
               id="tone"
               value={tone}
               onChange={(e) => setTone(e.target.value)}
+              style={{
+                borderColor: settings.autoSelectTheme ? '#10b981' : '#ddd'
+              }}
             >
               <option value="inspirational">啟發性</option>
               <option value="motivational">激勵性</option>
