@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { generateScript } from '../services/scriptGenerator';
+import AIQuoteSuggestions from './AIQuoteSuggestions';
 
 const Container = styled.div`
   max-width: 800px;
@@ -79,16 +80,106 @@ const Timestamp = styled.span`
   font-size: 0.9rem;
 `;
 
+const AIToggle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+const AIBadge = styled.span`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+`;
+
+const ConfidenceIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: #f0f8ff;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  
+  .confidence-bar {
+    width: 100px;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  
+  .confidence-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #10b981 100%);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+`;
+
+const SuggestionsPanel = styled.div`
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+  
+  h4 {
+    margin: 0 0 1rem 0;
+    color: #333;
+  }
+  
+  .suggestions-grid {
+    display: grid;
+    gap: 0.5rem;
+  }
+  
+  .suggestion-item {
+    padding: 0.5rem;
+    background: white;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+`;
+
 const ScriptGenerator = () => {
   const [quote, setQuote] = useState('');
   const [theme, setTheme] = useState('success');
   const [tone, setTone] = useState('inspirational');
   const [generatedScript, setGeneratedScript] = useState(null);
+  const [useAI, setUseAI] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const script = generateScript({ quote, theme, tone });
-    setGeneratedScript(script);
+    setIsGenerating(true);
+    try {
+      const script = await generateScript({ quote, theme, tone, useAI });
+      setGeneratedScript(script);
+    } catch (error) {
+      console.error('腳本生成失敗:', error);
+      alert('腳本生成失敗，請重試');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const formatTime = (seconds) => {
@@ -139,15 +230,54 @@ const ScriptGenerator = () => {
             </Select>
           </div>
 
-          <Button type="submit">生成腳本</Button>
+          <AIToggle>
+            <label>
+              <input
+                type="checkbox"
+                checked={useAI}
+                onChange={(e) => setUseAI(e.target.checked)}
+              />
+              啟用 AI 增強
+              <span style={{opacity: 0.7}}>(智能優化內容與建議)</span>
+            </label>
+          </AIToggle>
+
+          <Button type="submit" disabled={isGenerating}>
+            {isGenerating ? '🤖 AI 生成中...' : '生成腳本'}
+          </Button>
         </Form>
+        <AIQuoteSuggestions
+          selectedTheme={theme}
+          onQuoteSelect={(selectedQuote) => {
+            setQuote(selectedQuote);
+          }}
+          onThemeChange={(newTheme) => {
+            setTheme(newTheme);
+          }}
+        />
       </Container>
     );
   }
 
   return (
     <Container>
-      <h2>您的3分鐘勵志短片腳本</h2>
+      <h2>
+        您的3分鐘勵志短片腳本
+        {generatedScript?.aiEnhanced && <AIBadge>🤖 AI 增強</AIBadge>}
+      </h2>
+      
+      {generatedScript?.aiEnhanced && (
+        <ConfidenceIndicator>
+          <span>AI 信心度:</span>
+          <div className="confidence-bar">
+            <div 
+              className="confidence-fill" 
+              style={{ width: `${generatedScript.aiConfidence}%` }}
+            />
+          </div>
+          <span>{generatedScript.aiConfidence}%</span>
+        </ConfidenceIndicator>
+      )}
       <ScriptOutput>
         <p>總時長：{formatTime(generatedScript.totalDuration)}</p>
         
@@ -179,6 +309,55 @@ const ScriptGenerator = () => {
         })}
         
         <Button onClick={() => setGeneratedScript(null)}>重新生成</Button>
+        
+        {generatedScript?.suggestions && (
+          <SuggestionsPanel>
+            <h4>💡 AI 建議</h4>
+            
+            {generatedScript.suggestions.alternativeQuotes?.length > 0 && (
+              <div>
+                <strong>替代金句建議:</strong>
+                <div className="suggestions-grid">
+                  {generatedScript.suggestions.alternativeQuotes.map((altQuote, i) => (
+                    <div key={i} className="suggestion-item">
+                      "{altQuote}"
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {generatedScript.suggestions.improvementTips?.length > 0 && (
+              <div style={{marginTop: '1rem'}}>
+                <strong>改進建議:</strong>
+                <div className="suggestions-grid">
+                  {generatedScript.suggestions.improvementTips.map((tip, i) => (
+                    <div key={i} className="suggestion-item">
+                      • {tip}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {generatedScript.visualElements && (
+              <div style={{marginTop: '1rem'}}>
+                <strong>視覺建議:</strong>
+                <div className="suggestions-grid">
+                  <div className="suggestion-item">
+                    <strong>推薦色彩:</strong> {generatedScript.visualElements.colors?.join(', ')}
+                  </div>
+                  <div className="suggestion-item">
+                    <strong>字體風格:</strong> {generatedScript.visualElements.fonts?.join(', ')}
+                  </div>
+                  <div className="suggestion-item">
+                    <strong>視覺特效:</strong> {generatedScript.visualElements.effects?.join(', ')}
+                  </div>
+                </div>
+              </div>
+            )}
+          </SuggestionsPanel>
+        )}
       </ScriptOutput>
     </Container>
   );

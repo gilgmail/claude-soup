@@ -1,4 +1,5 @@
 // src/services/scriptGenerator.js
+import { aiService } from './aiService';
 
 /**
  * Generates a 3-minute motivational script with scenes and voiceovers.
@@ -6,9 +7,10 @@
  * @param {string} params.quote - The core motivational quote
  * @param {string} params.theme - The theme or topic (optional)
  * @param {string} params.tone - The emotional tone (optional)
+ * @param {boolean} params.useAI - Whether to use AI enhancement (optional)
  * @returns {Object} - The generated script with timing and sections
  */
-export function generateScript({ quote, theme = 'success', tone = 'inspirational' }) {
+export async function generateScript({ quote, theme = 'success', tone = 'inspirational', useAI = true }) {
     if (!quote) {
         throw new Error("Quote cannot be empty");
     }
@@ -20,7 +22,8 @@ export function generateScript({ quote, theme = 'success', tone = 'inspirational
     const STORY_TIME = 90;
     const CLOSING_TIME = 40;
 
-    const script = {
+    // 基礎腳本生成
+    let script = {
         totalDuration: TOTAL_TIME,
         sections: [
             {
@@ -53,6 +56,32 @@ export function generateScript({ quote, theme = 'success', tone = 'inspirational
             }
         ]
     };
+
+    // AI 增強功能
+    if (useAI) {
+        try {
+            const aiEnhancement = await aiService.enhanceScript(quote, theme, tone);
+            const quoteAnalysis = await aiService.analyzeQuote(quote);
+            
+            if (aiEnhancement.aiGenerated) {
+                // 更新腳本內容使用 AI 增強版本
+                script.sections[0].voiceover = aiEnhancement.enhancedScript.intro;
+                script.sections[2].voiceover = aiEnhancement.enhancedScript.story;
+                script.sections[2].scene = aiEnhancement.enhancedScript.scenes;
+                script.sections[3].voiceover = aiEnhancement.enhancedScript.closing;
+                
+                // 添加 AI 相關資訊
+                script.aiEnhanced = true;
+                script.aiConfidence = aiEnhancement.confidence;
+                script.suggestions = aiEnhancement.suggestions;
+                script.visualElements = aiEnhancement.visualElements;
+                script.quoteAnalysis = quoteAnalysis;
+            }
+        } catch (error) {
+            console.error('AI 增強失敗，使用基礎版本:', error);
+            script.aiEnhanced = false;
+        }
+    }
 
     return script;
 }
