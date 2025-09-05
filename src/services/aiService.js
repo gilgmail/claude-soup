@@ -6,72 +6,72 @@ class AIService {
         this.baseURL = 'https://api.openai.com/v1';
         this.apiKey = process.env.REACT_APP_OPENAI_API_KEY || '';
         
-        // 生人文案主題庫
-        this.copywritingThemes = {
-            product: {
-                keywords: ['品質', '創新', '價值', '體驗', '信賴', '專業', '卓越', '突破'],
-                scenarios: ['產品發布', '品牌故事', '用戶見證', '技術優勢', '市場領導'],
-                hooks: ['你知道嗎？', '想像一下...', '有沒有想過', '是時候了', '別再等了']
+        // 心靈雞湯主題庫
+        this.inspirationalThemes = {
+            成長: {
+                keywords: ['夢想', '堅持', '努力', '改變', '突破', '學習', '進步', '蛻變'],
+                scenarios: ['克服困難', '追求夢想', '個人成長', '學習新技能', '面對挫折'],
+                hooks: ['每一天都是新的開始', '相信自己的力量', '永不放棄', '成長在於突破', '改變從今天開始']
             },
-            service: {
-                keywords: ['專業', '貼心', '效率', '解決', '支援', '服務', '滿意', '安心'],
-                scenarios: ['服務介紹', '客戶案例', '問題解決', '專業諮詢', '售後保障'],
-                hooks: ['為什麼選擇我們？', '讓我們來幫您', '您的需求我們懂', '專業團隊為您服務', '一站式解決方案']
+            勵志: {
+                keywords: ['勇氣', '堅強', '信念', '毅力', '決心', '意志', '拼搏', '奮鬥'],
+                scenarios: ['追逐目標', '戰勝困難', '實現理想', '挑戰自我', '永不言敗'],
+                hooks: ['你比想像中更強大', '勇敢面對每一個挑戰', '相信奇蹟會發生', '堅持就是勝利', '困難只是成功的階梯']
             },
-            lifestyle: {
-                keywords: ['生活', '品味', '享受', '質感', '美好', '精緻', '優雅', '舒適'],
-                scenarios: ['生活方式', '品味提升', '休閒娛樂', '居家生活', '個人風格'],
-                hooks: ['生活可以更美好', '品味從選擇開始', '給自己一個理由', '值得擁有的美好', '讓生活更精彩']
+            人生感悟: {
+                keywords: ['人生', '生命', '價值', '意義', '智慧', '感悟', '領悟', '哲理'],
+                scenarios: ['人生哲理', '生活智慧', '價值思考', '生命意義', '內心平靜'],
+                hooks: ['人生如茶，苦後甘甜', '生命的真諦在於', '每個人都有自己的人生', '珍惜當下', '生活就是一場修行']
             },
-            business: {
-                keywords: ['商機', '成長', '效益', '投資', '收益', '策略', '競爭', '優勢'],
-                scenarios: ['商業機會', '投資方案', '合作提案', '市場分析', '競爭優勢'],
-                hooks: ['抓住商機', '投資未來', '合作共贏', '領先競爭', '創造價值']
+            愛與溫暖: {
+                keywords: ['愛', '溫暖', '關懷', '感恩', '幸福', '陪伴', '守護', '珍惜'],
+                scenarios: ['家人情深', '友情可貴', '愛情甜蜜', '感恩生活', '溫暖他人'],
+                hooks: ['愛是世界上最美的語言', '溫暖的心能照亮黑暗', '感恩讓生活更美好', '有愛的地方就有希望', '用心去愛，用愛去生活']
             }
         };
         
-        // 文案結構模板庫
-        this.copyTemplates = {
-            hooks: [
-                "你是否曾經想過{問題}？",
-                "在{場景}中，最重要的是什麼？",
-                "為什麼{目標對象}都選擇{解決方案}？",
-                "如果有一個方法能讓你{期望結果}...",
-                "想像一下{理想情境}的感覺"
+        // 心靈雞湯文章模板庫
+        this.articleTemplates = {
+            開頭: [
+                "你是否曾經在{情境}中感到迷茫？",
+                "人生就像{比喻}，充滿了{感受}...",
+                "有人說{名言}，這句話深深打動了我",
+                "當我們面對{困難}時，最需要的是{品質}",
+                "生活中總有一些{時刻}，讓我們重新思考人生的意義"
             ],
-            benefits: [
-                "不僅僅是{基本功能}，更是{深層價值}",
-                "從{現況}到{理想狀態}的完美轉換",
-                "讓{目標}變得{形容詞}又{形容詞}",
-                "專為{目標對象}量身打造的{解決方案}"
+            故事: [
+                "曾經有個{角色}，他在{情境}中遇到了{困難}...",
+                "我想起了{時間}發生的一件事...",
+                "在{地點}，我遇見了一個{角色}，他的故事改變了我的想法...",
+                "有一個關於{主題}的故事，至今還深深影響著我..."
             ],
-            proofs: [
-                "超過{數字}的用戶見證了{效果}",
-                "經過{時間}的市場驗證",
-                "{權威機構}認證推薦",
-                "成功案例遍布{範圍}"
+            感悟: [
+                "這讓我明白了{道理}",
+                "原來{真理}是如此簡單卻又深刻",
+                "生活教會我們{智慧}",
+                "每個{困難}背後都隱藏著{機會}"
             ],
-            actions: [
-                "現在就開始{行動}，改變從今天開始",
-                "把握{時機}，機會不等人",
-                "加入{群體}，一起{目標}",
-                "聯繫我們，讓專業為您{服務內容}"
+            結尾: [
+                "願你在{道路}上，都能保持{品質}的心",
+                "相信{信念}，你會發現生活的{美好}",
+                "記住：{激勵語}，因為你值得擁有最好的人生",
+                "讓我們一起{行動}，創造屬於自己的{美好}"
             ]
         };
     }
 
-    // 模擬 AI 增強的文案生成
-    async enhanceCopywriting(topic, theme, tone, wordCount = 800) {
+    // 模擬 AI 增強的心靈雞湯文章生成
+    async enhanceInspirationalArticle(topic, theme, tone, wordCount = 800) {
         try {
             // 模擬 API 延遲
             await new Promise(resolve => setTimeout(resolve, 1000));
             
-            const longFormContent = this.generateLongFormCopywriting(topic, theme, tone, wordCount);
-            const suggestions = this.generateCopywritingSuggestions(topic, theme);
-            const structureAnalysis = this.analyzeCopywritingStructure(longFormContent);
+            const articleContent = this.generateInspirationalArticle(topic, theme, tone, wordCount);
+            const suggestions = this.generateArticleSuggestions(topic, theme);
+            const structureAnalysis = this.analyzeArticleStructure(articleContent);
             
             return {
-                copywriting: longFormContent,
+                article: articleContent,
                 suggestions: suggestions,
                 structureAnalysis: structureAnalysis,
                 confidence: Math.floor(Math.random() * 20) + 80, // 80-100% 信心度
@@ -81,24 +81,24 @@ class AIService {
         } catch (error) {
             console.error('AI 增強失敗:', error);
             // 回退到基本功能
-            return this.fallbackEnhancement(topic, theme, tone);
+            return this.fallbackArticleEnhancement(topic, theme, tone);
         }
     }
 
-    // 生成長文案內容
-    generateLongFormCopywriting(topic, theme, tone, wordCount) {
-        const themeData = this.copywritingThemes[theme] || this.copywritingThemes.product;
+    // 生成心靈雞湯文章內容
+    generateInspirationalArticle(topic, theme, tone, wordCount) {
+        const themeData = this.inspirationalThemes[theme] || this.inspirationalThemes.成長;
         const hooks = themeData.hooks || themeData.keywords;
         const scenarios = themeData.scenarios;
         
         const structure = {
-            headline: this.generateHeadline(topic, theme, hooks),
-            introduction: this.generateIntroduction(topic, theme, tone),
-            mainContent: this.generateMainContent(topic, theme, scenarios, wordCount),
-            benefits: this.generateBenefitsList(topic, theme),
-            proof: this.generateSocialProof(topic, theme),
-            conclusion: this.generateConclusion(topic, tone),
-            cta: this.generateCTA(topic, tone)
+            title: this.generateArticleTitle(topic, theme, hooks),
+            introduction: this.generateArticleIntroduction(topic, theme, tone),
+            story: this.generateInspirationalStory(topic, theme, scenarios, wordCount),
+            insights: this.generateLifeInsights(topic, theme),
+            reflection: this.generateReflection(topic, theme),
+            conclusion: this.generateInspirationalConclusion(topic, tone),
+            message: this.generateUplifitingMessage(topic, tone)
         };
         
         return structure;
@@ -226,11 +226,11 @@ class AIService {
         return ctas[tone] || ctas.professional;
     }
 
-    // 生成文案建議
-    generateCopywritingSuggestions(topic, theme) {
+    // 生成文章建議
+    generateArticleSuggestions(topic, theme) {
         return {
-            alternativeHeadlines: this.generateAlternativeHeadlines(topic, theme),
-            improvementTips: this.getCopywritingTips(theme),
+            alternativeTitles: this.generateAlternativeTitles(topic, theme),
+            improvementTips: this.getArticleWritingTips(theme),
             relatedThemes: this.getRelatedThemes(theme),
             keywordSuggestions: this.getKeywordSuggestions(topic, theme)
         };

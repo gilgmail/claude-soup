@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import ScriptGenerator from './components/ScriptGenerator';
-import CopywritingGenerator from './components/CopywritingGenerator';
+import ArticleGenerator from './components/ArticleGenerator';
 import AutoModeSettings from './components/AutoModeSettings';
 
 const AppContainer = styled.div`
@@ -59,10 +59,10 @@ function App() {
     <AppContainer>
       <AutoModeSettings />
       <Header>
-        <h1>🤖 AI 智能內容生成器</h1>
-        <p>強大的 AI 驅動內容创作工具，支持短片腳本和長文案生成</p>
+        <h1>💖 AI 心靈雞湯生成器</h1>
+        <p>溫暖人心的 AI 驅動正能量內容創作工具</p>
         <p style={{fontSize: '0.9rem', opacity: 0.8}}>
-          ⚙️ 點擊右上角設定按鈕開啟全自動模式
+          ⚙️ 點擊右上角設定按鈕開啟全自動模式 - 所有詢問自動回答 YES
         </p>
       </Header>
       
@@ -74,15 +74,15 @@ function App() {
           🎥 短片腳本
         </Tab>
         <Tab 
-          active={activeTab === 'copywriting'} 
-          onClick={() => setActiveTab('copywriting')}
+          active={activeTab === 'article'} 
+          onClick={() => setActiveTab('article')}
         >
-          🖋️ 長文案 (800-1000字)
+          💖 心靈雞湯 (800-1000字)
         </Tab>
       </TabContainer>
       
       {activeTab === 'script' && <ScriptGenerator />}
-      {activeTab === 'copywriting' && <CopywritingGenerator />}
+      {activeTab === 'article' && <ArticleGenerator />}
     </AppContainer>
   );
 }
