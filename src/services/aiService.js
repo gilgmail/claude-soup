@@ -6,46 +6,74 @@ class AIService {
         this.baseURL = 'https://api.openai.com/v1';
         this.apiKey = process.env.REACT_APP_OPENAI_API_KEY || '';
         
-        // 預設的勵志主題庫
-        this.inspirationalThemes = {
-            success: {
-                keywords: ['成功', '成就', '目標', '夢想', '堅持', '努力'],
-                scenarios: ['創業故事', '運動員奮鬥', '學業成就', '職場晉升', '技能提升']
+        // 生人文案主題庫
+        this.copywritingThemes = {
+            product: {
+                keywords: ['品質', '創新', '價值', '體驗', '信賴', '專業', '卓越', '突破'],
+                scenarios: ['產品發布', '品牌故事', '用戶見證', '技術優勢', '市場領導'],
+                hooks: ['你知道嗎？', '想像一下...', '有沒有想過', '是時候了', '別再等了']
             },
-            growth: {
-                keywords: ['成長', '學習', '進步', '改變', '突破', '蛻變'],
-                scenarios: ['個人發展', '技能學習', '心智成長', '克服困難', '自我提升']
+            service: {
+                keywords: ['專業', '貼心', '效率', '解決', '支援', '服務', '滿意', '安心'],
+                scenarios: ['服務介紹', '客戶案例', '問題解決', '專業諮詢', '售後保障'],
+                hooks: ['為什麼選擇我們？', '讓我們來幫您', '您的需求我們懂', '專業團隊為您服務', '一站式解決方案']
             },
-            courage: {
-                keywords: ['勇氣', '勇敢', '挑戰', '冒險', '決心', '無畏'],
-                scenarios: ['面對恐懼', '挑戰困難', '做出選擇', '承擔責任', '勇敢追夢']
+            lifestyle: {
+                keywords: ['生活', '品味', '享受', '質感', '美好', '精緻', '優雅', '舒適'],
+                scenarios: ['生活方式', '品味提升', '休閒娛樂', '居家生活', '個人風格'],
+                hooks: ['生活可以更美好', '品味從選擇開始', '給自己一個理由', '值得擁有的美好', '讓生活更精彩']
+            },
+            business: {
+                keywords: ['商機', '成長', '效益', '投資', '收益', '策略', '競爭', '優勢'],
+                scenarios: ['商業機會', '投資方案', '合作提案', '市場分析', '競爭優勢'],
+                hooks: ['抓住商機', '投資未來', '合作共贏', '領先競爭', '創造價值']
             }
         };
         
-        // 金句模板庫
-        this.quoteTemplates = [
-            "成功不是{終點}，而是{過程}的累積",
-            "每一次的{挫折}都是{成長}的機會",
-            "真正的{力量}來自於{內心}的堅持",
-            "當你{相信}自己時，{奇蹟}就會發生",
-            "最大的{敵人}不是別人，而是{昨天的自己}"
-        ];
+        // 文案結構模板庫
+        this.copyTemplates = {
+            hooks: [
+                "你是否曾經想過{問題}？",
+                "在{場景}中，最重要的是什麼？",
+                "為什麼{目標對象}都選擇{解決方案}？",
+                "如果有一個方法能讓你{期望結果}...",
+                "想像一下{理想情境}的感覺"
+            ],
+            benefits: [
+                "不僅僅是{基本功能}，更是{深層價值}",
+                "從{現況}到{理想狀態}的完美轉換",
+                "讓{目標}變得{形容詞}又{形容詞}",
+                "專為{目標對象}量身打造的{解決方案}"
+            ],
+            proofs: [
+                "超過{數字}的用戶見證了{效果}",
+                "經過{時間}的市場驗證",
+                "{權威機構}認證推薦",
+                "成功案例遍布{範圍}"
+            ],
+            actions: [
+                "現在就開始{行動}，改變從今天開始",
+                "把握{時機}，機會不等人",
+                "加入{群體}，一起{目標}",
+                "聯繫我們，讓專業為您{服務內容}"
+            ]
+        };
     }
 
-    // 模擬 AI 增強的腳本生成
-    async enhanceScript(quote, theme, tone) {
+    // 模擬 AI 增強的文案生成
+    async enhanceCopywriting(topic, theme, tone, wordCount = 800) {
         try {
             // 模擬 API 延遲
             await new Promise(resolve => setTimeout(resolve, 1000));
             
-            const enhancedContent = this.generateEnhancedContent(quote, theme, tone);
-            const suggestions = this.generateSuggestions(quote, theme);
-            const visualElements = this.generateVisualElements(theme);
+            const longFormContent = this.generateLongFormCopywriting(topic, theme, tone, wordCount);
+            const suggestions = this.generateCopywritingSuggestions(topic, theme);
+            const structureAnalysis = this.analyzeCopywritingStructure(longFormContent);
             
             return {
-                enhancedScript: enhancedContent,
+                copywriting: longFormContent,
                 suggestions: suggestions,
-                visualElements: visualElements,
+                structureAnalysis: structureAnalysis,
                 confidence: Math.floor(Math.random() * 20) + 80, // 80-100% 信心度
                 aiGenerated: true
             };
@@ -53,8 +81,243 @@ class AIService {
         } catch (error) {
             console.error('AI 增強失敗:', error);
             // 回退到基本功能
-            return this.fallbackEnhancement(quote, theme, tone);
+            return this.fallbackEnhancement(topic, theme, tone);
         }
+    }
+
+    // 生成長文案內容
+    generateLongFormCopywriting(topic, theme, tone, wordCount) {
+        const themeData = this.copywritingThemes[theme] || this.copywritingThemes.product;
+        const hooks = themeData.hooks || themeData.keywords;
+        const scenarios = themeData.scenarios;
+        
+        const structure = {
+            headline: this.generateHeadline(topic, theme, hooks),
+            introduction: this.generateIntroduction(topic, theme, tone),
+            mainContent: this.generateMainContent(topic, theme, scenarios, wordCount),
+            benefits: this.generateBenefitsList(topic, theme),
+            proof: this.generateSocialProof(topic, theme),
+            conclusion: this.generateConclusion(topic, tone),
+            cta: this.generateCTA(topic, tone)
+        };
+        
+        return structure;
+    }
+
+    // 生成標題
+    generateHeadline(topic, theme, hooks) {
+        const headlines = [
+            `革新${topic}體驗，創造無限可能`,
+            `專業${topic}解決方案，值得信賴的選擇`,
+            `${topic}新標準，引領行業變革`,
+            `選擇優質${topic}，投資美好未來`
+        ];
+        return headlines[Math.floor(Math.random() * headlines.length)];
+    }
+
+    // 生成介紹段落
+    generateIntroduction(topic, theme, tone) {
+        const intros = {
+            professional: `在當今競爭激烈的市場環境中，選擇合適的${topic}至關重要。我們深入了解客戶需求，致力於提供最專業的解決方案。`,
+            friendly: `你好！很高興與你分享關於${topic}的精彩內容。讓我們一起探索這個充滿機會的領域吧！`,
+            urgent: `機會稍縱即逝！現在正是選擇優質${topic}的最佳時機。不要讓猶豫成為成功路上的絆腳石。`,
+            creative: `想像一個全新的${topic}世界，在這裡，創新與品質完美融合，每一個細節都在訴說著卓越的故事。`
+        };
+        return intros[tone] || intros.professional;
+    }
+
+    // 生成主要內容
+    generateMainContent(topic, theme, scenarios, targetWords) {
+        const baseContent = scenarios.map(scenario => {
+            return `在${scenario}領域，我們的${topic}展現出卓越的表現。通過深入的市場研究和技術創新，我們不斷提升產品品質，確保能夠滿足各種複雜需求。我們的專業團隊擁有豐富的行業經驗，能夠為客戶提供量身訂製的解決方案。`;
+        });
+        
+        // 擴展內容以達到目標字數
+        const expandedContent = [];
+        const wordsPerSection = Math.ceil(targetWords * 0.6 / baseContent.length); // 主內容佔 60%
+        
+        baseContent.forEach((content, index) => {
+            let expandedSection = content;
+            
+            // 根據主題添加特定內容
+            switch (theme) {
+                case 'product':
+                    expandedSection += `我們的${topic}採用先進的製造工藝和優質材料，確保產品的耐用性和可靠性。每一個產品都經過嚴格的品質檢測，只有達到我們嚴苛標準的產品才能與客戶見面。`;
+                    break;
+                case 'service':
+                    expandedSection += `我們的服務團隊24小時待命，隨時準備為客戶解決各種${topic}相關問題。我們相信，優質的服務是建立長期合作關係的基礎。`;
+                    break;
+                case 'lifestyle':
+                    expandedSection += `選擇我們的${topic}，就是選擇一種更加精緻的生活方式。我們注重每一個細節，力求為您創造最舒適的使用體驗。`;
+                    break;
+                case 'business':
+                    expandedSection += `在商業環境中，效率與成本控制同樣重要。我們的${topic}方案能夠幫助企業優化流程，提高工作效率，同時降低營運成本。`;
+                    break;
+            }
+            
+            expandedContent.push(expandedSection);
+        });
+        
+        return expandedContent.join('\n\n');
+    }
+
+    // 生成效益清單
+    generateBenefitsList(topic, theme) {
+        const benefits = {
+            product: [
+                `高品質保證：每一個${topic}都經過嚴格品質控制`,
+                `創新設計：融合最新技術與人性化設計理念`,
+                `長期價值：投資於品質，享受長久效益`,
+                `專業支援：完善的售前售後服務體系`
+            ],
+            service: [
+                `專業團隊：由行業專家組成的服務團隊`,
+                `客製化方案：根據客戶需求量身訂製`,
+                `高效執行：標準化流程確保服務品質`,
+                `持續優化：根據反饋不斷改進服務`
+            ],
+            lifestyle: [
+                `品質生活：提升日常生活品質`,
+                `個人風格：彰顯獨特品味與格調`,
+                `舒適體驗：注重使用者感受`,
+                `長期投資：品質選擇的持續回報`
+            ],
+            business: [
+                `效率提升：優化業務流程`,
+                `成本控制：有效降低營運成本`,
+                `競爭優勢：在市場中保持領先`,
+                `風險管理：專業的風險評估與控制`
+            ]
+        };
+        
+        return benefits[theme] || benefits.product;
+    }
+
+    // 生成社會證明
+    generateSocialProof(topic, theme) {
+        const proofs = [
+            `超過10,000名滿意客戶選擇了我們的${topic}`,
+            `98%的客戶推薦率證明了我們的專業水準`,
+            `榮獲多項行業認證與獎項`,
+            `成功案例遍布各個行業領域`
+        ];
+        return proofs[Math.floor(Math.random() * proofs.length)];
+    }
+
+    // 生成結論
+    generateConclusion(topic, tone) {
+        const conclusions = {
+            professional: `綜合以上所述，選擇我們的${topic}是明智的投資決策。我們承諾為每一位客戶提供最優質的產品與服務。`,
+            friendly: `希望這些資訊對你有所幫助！如果你對我們的${topic}感興趣，歡迎隨時與我們聯繫。`,
+            urgent: `時間寶貴，機會難得！現在就採取行動，選擇我們的${topic}，開啟成功之路！`,
+            creative: `讓我們一起創造屬於你的${topic}傳奇故事，在這個充滿可能性的旅程中，我們將是你最可靠的夥伴。`
+        };
+        return conclusions[tone] || conclusions.professional;
+    }
+
+    // 生成行動號召
+    generateCTA(topic, tone) {
+        const ctas = {
+            professional: `立即聯繫我們的專業顧問，了解更多${topic}詳細資訊。`,
+            friendly: `想要了解更多嗎？歡迎與我們聊聊！`,
+            urgent: `機會有限！立即行動，把握${topic}優惠！`,
+            creative: `準備好開始你的${topic}冒險之旅了嗎？`
+        };
+        return ctas[tone] || ctas.professional;
+    }
+
+    // 生成文案建議
+    generateCopywritingSuggestions(topic, theme) {
+        return {
+            alternativeHeadlines: this.generateAlternativeHeadlines(topic, theme),
+            improvementTips: this.getCopywritingTips(theme),
+            relatedThemes: this.getRelatedThemes(theme),
+            keywordSuggestions: this.getKeywordSuggestions(topic, theme)
+        };
+    }
+
+    // 生成替代標題
+    generateAlternativeHeadlines(topic, theme) {
+        const alternatives = [
+            `突破性${topic}解決方案`,
+            `重新定義${topic}標準`,
+            `專業${topic}，品質保證`,
+            `創新${topic}，超越期待`,
+            `值得信賴的${topic}夥伴`
+        ];
+        return alternatives.slice(0, 3);
+    }
+
+    // 獲取文案建議
+    getCopywritingTips(theme) {
+        const tips = {
+            product: [
+                '強調產品的獨特賣點與競爭優勢',
+                '加入具體的數據與事實支撐',
+                '突出客戶使用後的具體效益'
+            ],
+            service: [
+                '展示服務團隊的專業能力',
+                '提供具體的服務流程說明',
+                '強調客戶成功案例與見證'
+            ],
+            lifestyle: [
+                '營造情感共鳴與美好想像',
+                '強調生活品質的提升',
+                '突出個人品味與風格'
+            ],
+            business: [
+                '量化商業價值與投資回報',
+                '提供行業分析與市場數據',
+                '強調競爭優勢與風險控制'
+            ]
+        };
+        return tips[theme] || tips.product;
+    }
+
+    // 獲取關鍵詞建議
+    getKeywordSuggestions(topic, theme) {
+        const themeData = this.copywritingThemes[theme] || this.copywritingThemes.product;
+        return themeData.keywords.slice(0, 5);
+    }
+
+    // 分析文案結構
+    analyzeCopywritingStructure(content) {
+        return {
+            structure: '完整的文案結構包含標題、介紹、主要內容、效益、證明、結論和行動號召',
+            readability: '內容結構清晰，邏輯性強，易於理解',
+            engagement: '採用多種修辭手法，增強讀者參與感',
+            persuasion: '運用說服力原則，有效引導讀者採取行動'
+        };
+    }
+
+    // 回退增強功能
+    fallbackEnhancement(topic, theme, tone) {
+        return {
+            copywriting: {
+                headline: `關於${topic}的專業方案`,
+                introduction: `我們為您提供優質的${topic}服務`,
+                mainContent: `專業、可靠、值得信賴的${topic}解決方案`,
+                benefits: ['專業服務', '品質保證', '客戶滿意'],
+                proof: '眾多客戶的信賴選擇',
+                conclusion: `選擇我們，選擇專業的${topic}服務`,
+                cta: '立即聯繫我們了解更多'
+            },
+            suggestions: {
+                alternativeHeadlines: ['建議功能暫時不可用'],
+                improvementTips: ['請稍後重試'],
+                relatedThemes: [],
+                keywordSuggestions: []
+            },
+            structureAnalysis: {
+                structure: '基本結構',
+                readability: '標準',
+                engagement: '一般',
+                persuasion: '普通'
+            },
+            confidence: 60,
+            aiGenerated: false
+        };
     }
 
     // 生成增強內容
